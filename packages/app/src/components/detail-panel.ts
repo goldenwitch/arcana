@@ -30,6 +30,8 @@ export interface DetailPanelOptions {
   phraseEntryNames?: string[];
   /** Entry point word IDs if viewing phrase */
   phraseEntryIds?: string[];
+  /** All words in the phrase (entry points + dependencies) */
+  phraseMembers?: Word[];
 }
 
 /**
@@ -69,7 +71,7 @@ export function createDetailPanel(
 }
 
 /**
- * Update detail panel to show word information.
+ * Update detail panel to show word information or phrase summary.
  */
 export function updateDetailPanel(
   elements: DetailPanelElements,
@@ -81,35 +83,114 @@ export function updateDetailPanel(
 ): void {
   const { container, content } = elements;
 
+  // Show phrase summary when viewing a phrase
+  if (options.isViewingPhrase && options.phraseMembers && options.phraseMembers.length > 0) {
+    container.classList.add("open");
+    content.innerHTML = "";
+
+    // Phrase header
+    const phraseHeader = document.createElement("div");
+    phraseHeader.className = "phrase-header";
+
+    const title = document.createElement("h3");
+    title.className = "detail-word-name";
+    title.textContent = "Phrase";
+
+    const exitButton = document.createElement("button");
+    exitButton.className = "phrase-exit-button";
+    exitButton.textContent = "Clear";
+    exitButton.type = "button";
+    exitButton.title = "Exit phrase view and show full vocabulary";
+    exitButton.addEventListener("click", () => callbacks.onExitPhrase?.());
+
+    phraseHeader.appendChild(title);
+    phraseHeader.appendChild(exitButton);
+    content.appendChild(phraseHeader);
+
+    // Entry points section
+    if (options.phraseEntryIds && options.phraseEntryIds.length > 0) {
+      const entrySection = document.createElement("div");
+      entrySection.className = "detail-section";
+
+      const entryTitle = document.createElement("h4");
+      entryTitle.textContent = `Entry Points (${options.phraseEntryIds.length})`;
+      entrySection.appendChild(entryTitle);
+
+      const entryList = document.createElement("ul");
+      entryList.className = "word-list";
+
+      for (const entryId of options.phraseEntryIds) {
+        const entryWord = allWords.find((w) => w.id === entryId);
+        if (entryWord) {
+          const li = document.createElement("li");
+          const button = document.createElement("button");
+          button.className = "word-link entry-point";
+          button.textContent = `${entryWord.name} ✕`;
+          button.type = "button";
+          button.title = `Remove ${entryWord.name} from phrase`;
+          button.addEventListener("click", () => callbacks.onWordClick(entryWord.id));
+          li.appendChild(button);
+          entryList.appendChild(li);
+        }
+      }
+
+      entrySection.appendChild(entryList);
+      content.appendChild(entrySection);
+    }
+
+    // Phrase members by level
+    const membersByLevel = new Map<number, Word[]>();
+    for (const member of options.phraseMembers) {
+      const level = member.level;
+      if (!membersByLevel.has(level)) {
+        membersByLevel.set(level, []);
+      }
+      membersByLevel.get(level)!.push(member);
+    }
+
+    // Sort levels descending
+    const sortedLevels = [...membersByLevel.keys()].sort((a, b) => b - a);
+
+    const membersSection = document.createElement("div");
+    membersSection.className = "detail-section";
+
+    const membersTitle = document.createElement("h4");
+    membersTitle.textContent = `Members (${options.phraseMembers.length})`;
+    membersSection.appendChild(membersTitle);
+
+    for (const level of sortedLevels) {
+      const levelWords = membersByLevel.get(level)!;
+      
+      const levelGroup = document.createElement("div");
+      levelGroup.className = "phrase-level-group";
+
+      const levelLabel = document.createElement("span");
+      levelLabel.className = "phrase-level-label";
+      levelLabel.textContent = `L${level}`;
+      levelGroup.appendChild(levelLabel);
+
+      const wordList = document.createElement("span");
+      wordList.className = "phrase-level-words";
+      wordList.textContent = levelWords.map((w) => w.name).join(", ");
+      levelGroup.appendChild(wordList);
+
+      membersSection.appendChild(levelGroup);
+    }
+
+    content.appendChild(membersSection);
+    return;
+  }
+
+  // No phrase and no selected word - close panel
   if (!word) {
     container.classList.remove("open");
     content.innerHTML = "";
     return;
   }
 
+  // Single word view (legacy, when not in phrase mode)
   container.classList.add("open");
   content.innerHTML = "";
-
-  // Phrase banner if viewing a phrase
-  if (options.isViewingPhrase && options.phraseEntryNames) {
-    const phraseBanner = document.createElement("div");
-    phraseBanner.className = "phrase-banner";
-
-    const phraseInfo = document.createElement("span");
-    phraseInfo.className = "phrase-info";
-    phraseInfo.textContent = `Phrase: ${options.phraseEntryNames.join(", ")}`;
-
-    const exitButton = document.createElement("button");
-    exitButton.className = "phrase-exit-button";
-    exitButton.textContent = "Show All";
-    exitButton.type = "button";
-    exitButton.title = "Exit phrase view and show full vocabulary";
-    exitButton.addEventListener("click", () => callbacks.onExitPhrase?.());
-
-    phraseBanner.appendChild(phraseInfo);
-    phraseBanner.appendChild(exitButton);
-    content.appendChild(phraseBanner);
-  }
 
   // Word name
   const name = document.createElement("h3");

@@ -1,6 +1,7 @@
 // @arcana/app - Application state management
 
 import type { Vocabulary, Word } from "@arcana/vocabulary";
+import { reachableFrom } from "@arcana/phrase";
 
 /**
  * Application state.
@@ -238,4 +239,27 @@ export function getPhraseEntryWords(state: AppState): Word[] {
   return state.vocabulary.words.filter((w) =>
     state.phraseEntryPoints!.includes(w.id),
   );
+}
+
+/**
+ * Get all words in the phrase (entry points + all their transitive dependencies).
+ */
+export function getPhraseMembers(state: AppState): Word[] {
+  if (!state.vocabulary || !state.phraseEntryPoints || state.phraseEntryPoints.length === 0) {
+    return [];
+  }
+
+  // Compute all reachable IDs from all entry points
+  const phraseIds = new Set<string>();
+  for (const entryId of state.phraseEntryPoints) {
+    const reachable = reachableFrom(state.vocabulary, entryId);
+    for (const id of reachable) {
+      phraseIds.add(id);
+    }
+  }
+
+  // Return words sorted by level (descending) then name
+  return state.vocabulary.words
+    .filter((w) => phraseIds.has(w.id))
+    .sort((a, b) => b.level - a.level || a.name.localeCompare(b.name));
 }

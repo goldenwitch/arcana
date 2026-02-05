@@ -7,9 +7,16 @@ import type {
   VizColors,
   LayoutResult,
   NodePosition,
+  PhraseFocusOptions,
 } from "./types.js";
-import { defaultOptions } from "./types.js";
+import { defaultOptions, defaultPhraseFocusOptions } from "./types.js";
 import { computeLayout, createPositionMap } from "./layout.js";
+import {
+  computePhraseFocusedLayout,
+  computeDefaultLayout,
+  getPhraseVisualState,
+  getEdgeVisualState,
+} from "./phrase-layout.js";
 
 /**
  * State managed by the renderer.
@@ -18,6 +25,10 @@ export interface RendererState {
   selectedId: string | null;
   highlightedIds: Set<string>;
   hoveredId: string | null;
+  /** IDs of words in the focused phrase, or null if no phrase focus */
+  phraseIds: Set<string> | null;
+  /** Entry point IDs that defined the current phrase focus */
+  phraseEntryPoints: string[];
 }
 
 /**
@@ -26,6 +37,7 @@ export interface RendererState {
 export interface RendererCallbacks {
   onSelect: (wordId: string | null) => void;
   onHover: (wordId: string | null) => void;
+  onFocusChange: (entryPointIds: string[]) => void;
 }
 
 /**
@@ -99,12 +111,16 @@ export class Renderer {
     selectedId: null,
     highlightedIds: new Set(),
     hoveredId: null,
+    phraseIds: null,
+    phraseEntryPoints: [],
   };
   private callbacks: RendererCallbacks = {
     onSelect: () => {},
     onHover: () => {},
+    onFocusChange: () => {},
   };
   private currentZoomScale: number = 1;
+  private phraseFocusOptions: PhraseFocusOptions = { ...defaultPhraseFocusOptions };
 
   constructor(container: HTMLElement, options?: VizOptions) {
     this.container = container;
@@ -481,18 +497,24 @@ export class Renderer {
   updateStyles(): void {
     if (!this.selections) return;
 
-    const { nodesGroup, edgesGroup } = this.selections;
+    const { nodesGroup, edgesGroup, labelsGroup } = this.selections;
     const { colors, nodeRadius } = this.options;
-    const { selectedId, highlightedIds, hoveredId } = this.state;
+    const { selectedId, highlightedIds, hoveredId, phraseIds } = this.state;
 
     // Update node styles
-    nodesGroup.selectAll<SVGGElement, NodePosition>("g.node").each(function (d) {
-      const node = d3.select(this);
+    nodesGroup.selectAll<SVGGElement, NodePosition>("g.node").each((d) => {
+      const node = nodesGroup.select(`g.node[data-id="${d.id}"]`);
       const circle = node.select("circle");
 
       const isSelected = d.id === selectedId;
       const isHighlighted = highlightedIds.has(d.id);
       const isHovered = d.id === hoveredId;
+
+      // Get phrase visual state
+      const phraseState = getPhraseVisualState(d.id, phraseIds, isHovered);
+
+      // Apply opacity for phrase focus
+      node.attr("opacity", phraseState.opacity);
 
       // Determine stroke
       if (isSelected) {
@@ -511,11 +533,17 @@ export class Renderer {
           .attr("stroke-width", 2)
           .attr("r", nodeRadius + 1);
       } else {
-        circle.attr("stroke", "none").attr("stroke-width", 0).attr("r", nodeRadius);
+        circle
+          .attr("stroke", phraseState.strokeWidth > 1.5 ? colors.edge : "none")
+          .attr("stroke-width", phraseState.strokeWidth > 1.5 ? phraseState.strokeWidth : 0)
+          .attr("r", nodeRadius);
       }
     });
 
-    // Update edge styles for hover/selection
+    // Update label visibility - always show labels (phrase and non-phrase)
+    labelsGroup.selectAll<SVGGElement, { id: string }>("g.label").attr("opacity", 1);
+
+    // Update edge styles for hover/selection and phrase focus
     edgesGroup
       .selectAll<SVGPathElement, { sourceId: string; targetId: string }>("path.edge")
       .each(function (d) {
@@ -531,7 +559,12 @@ export class Renderer {
         if (isConnected) {
           path.attr("stroke", colors.highlighted).attr("opacity", 0.8).attr("stroke-width", 2);
         } else {
-          path.attr("stroke", colors.edge).attr("opacity", 0.25).attr("stroke-width", 1);
+          // Apply phrase focus styling
+          const edgeState = getEdgeVisualState(d.sourceId, d.targetId, phraseIds);
+          path
+            .attr("stroke", colors.edge)
+            .attr("opacity", edgeState.opacity)
+            .attr("stroke-width", edgeState.strokeWidth);
         }
       });
   }
@@ -608,6 +641,181 @@ export class Renderer {
       // Pan to center on this level's Y position, keeping X centered
       this.panTo(0, y);
     }
+  }
+
+  /**
+   * Focus on a phrase defined by entry points.
+   * Animates nodes to cluster phrase members and push others aside.
+   */
+  focusPhrase(phraseIds: Set<string>, entryPointIds: string[]): void {
+    if (!this.selections || !this.vocab || !this.layout) return;
+
+    const { nodesGroup, edgesGroup, labelsGroup } = this.selections;
+    const { nodeRadius } = this.options;
+    const { animationDuration } = this.phraseFocusOptions;
+
+    // Compute new positions
+    const focusedLayout = computePhraseFocusedLayout(
+      this.vocab,
+      phraseIds,
+      this.layout,
+      this.phraseFocusOptions
+    );
+
+    // Update state
+    this.state.phraseIds = phraseIds;
+    this.state.phraseEntryPoints = entryPointIds;
+
+    // Animate nodes to new positions
+    nodesGroup
+      .selectAll<SVGGElement, NodePosition>("g.node")
+      .transition()
+      .duration(animationDuration)
+      .ease(d3.easeCubicOut)
+      .attr("transform", (d) => {
+        const newPos = focusedLayout.positions.get(d.id);
+        const x = newPos?.x ?? d.x;
+        const y = newPos?.y ?? d.y;
+        // Update position data for edge redrawing
+        d.x = x;
+        d.y = y;
+        return `translate(${x}, ${y})`;
+      });
+
+    // Update position map for edge rendering
+    for (const [id, pos] of focusedLayout.positions) {
+      this.positionMap.set(id, pos);
+    }
+
+    // Animate edges to follow nodes
+    edgesGroup
+      .selectAll<SVGPathElement, { sourceId: string; targetId: string }>("path.edge")
+      .transition()
+      .duration(animationDuration)
+      .ease(d3.easeCubicOut)
+      .attr("d", (d) => {
+        const source = this.positionMap.get(d.sourceId);
+        const target = this.positionMap.get(d.targetId);
+        if (!source || !target) return "";
+        return generateEdgePath(source, target, nodeRadius);
+      });
+
+    // Animate labels to follow nodes
+    labelsGroup
+      .selectAll<SVGGElement, { id: string; nodeX: number; nodeY: number; x: number; y: number }>(
+        "g.label"
+      )
+      .transition()
+      .duration(animationDuration)
+      .ease(d3.easeCubicOut)
+      .attr("transform", (d) => {
+        const newPos = focusedLayout.positions.get(d.id);
+        if (newPos) {
+          d.nodeX = newPos.x;
+          d.nodeY = newPos.y;
+          d.x = newPos.x;
+          d.y = newPos.y + nodeRadius + 14;
+        }
+        const scale = 1 / this.currentZoomScale;
+        return `translate(${d.x}, ${d.y}) scale(${scale})`;
+      });
+
+    // Update styles after a short delay to allow animation to start
+    setTimeout(() => this.updateStyles(), 50);
+
+    // Notify listeners
+    this.callbacks.onFocusChange(entryPointIds);
+  }
+
+  /**
+   * Clear phrase focus and return to default layout.
+   */
+  clearFocus(): void {
+    if (!this.selections || !this.layout) return;
+
+    const { nodesGroup, edgesGroup, labelsGroup } = this.selections;
+    const { nodeRadius } = this.options;
+    const { animationDuration } = this.phraseFocusOptions;
+
+    // Get default positions
+    const defaultPositions = computeDefaultLayout(this.layout);
+
+    // Clear phrase state
+    this.state.phraseIds = null;
+    this.state.phraseEntryPoints = [];
+
+    // Animate nodes back to original positions
+    nodesGroup
+      .selectAll<SVGGElement, NodePosition>("g.node")
+      .transition()
+      .duration(animationDuration)
+      .ease(d3.easeCubicOut)
+      .attr("transform", (d) => {
+        const newPos = defaultPositions.get(d.id);
+        const x = newPos?.x ?? d.x;
+        const y = newPos?.y ?? d.y;
+        d.x = x;
+        d.y = y;
+        return `translate(${x}, ${y})`;
+      });
+
+    // Update position map
+    for (const [id, pos] of defaultPositions) {
+      this.positionMap.set(id, pos);
+    }
+
+    // Animate edges
+    edgesGroup
+      .selectAll<SVGPathElement, { sourceId: string; targetId: string }>("path.edge")
+      .transition()
+      .duration(animationDuration)
+      .ease(d3.easeCubicOut)
+      .attr("d", (d) => {
+        const source = this.positionMap.get(d.sourceId);
+        const target = this.positionMap.get(d.targetId);
+        if (!source || !target) return "";
+        return generateEdgePath(source, target, nodeRadius);
+      });
+
+    // Animate labels
+    labelsGroup
+      .selectAll<SVGGElement, { id: string; nodeX: number; nodeY: number; x: number; y: number }>(
+        "g.label"
+      )
+      .transition()
+      .duration(animationDuration)
+      .ease(d3.easeCubicOut)
+      .attr("transform", (d) => {
+        const newPos = defaultPositions.get(d.id);
+        if (newPos) {
+          d.nodeX = newPos.x;
+          d.nodeY = newPos.y;
+          d.x = newPos.x;
+          d.y = newPos.y + nodeRadius + 14;
+        }
+        const scale = 1 / this.currentZoomScale;
+        return `translate(${d.x}, ${d.y}) scale(${scale})`;
+      });
+
+    // Update styles
+    setTimeout(() => this.updateStyles(), 50);
+
+    // Notify listeners
+    this.callbacks.onFocusChange([]);
+  }
+
+  /**
+   * Set phrase focus options.
+   */
+  setPhraseFocusOptions(options: Partial<PhraseFocusOptions>): void {
+    Object.assign(this.phraseFocusOptions, options);
+  }
+
+  /**
+   * Get current phrase focus options.
+   */
+  getPhraseFocusOptions(): PhraseFocusOptions {
+    return { ...this.phraseFocusOptions };
   }
 
   /**

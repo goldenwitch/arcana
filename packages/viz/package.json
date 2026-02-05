@@ -15,6 +15,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@arcana/phrase": "workspace:*",
     "@arcana/vocabulary": "workspace:*",
     "d3": "^7.0.0"
   },

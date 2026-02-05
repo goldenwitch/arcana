@@ -106,6 +106,19 @@ export interface VizController {
   onSelect(callback: (wordId: string | null) => void): () => void;
   /** Subscribe to hover changes, returns unsubscribe function */
   onHover(callback: (wordId: string | null) => void): () => void;
+
+  // Phrase Focus
+  /**
+   * Focus visualization on a phrase defined by entry points.
+   * Clusters phrase members and pushes others aside.
+   */
+  focusPhrase(entryPointIds: string[]): void;
+  /** Clear phrase focus, return to default layout */
+  clearFocus(): void;
+  /** Configure phrase focus behavior */
+  setFocusOptions(options: Partial<PhraseFocusOptions>): void;
+  /** Subscribe to phrase focus changes, returns unsubscribe function */
+  onFocusChange(callback: (entryPointIds: string[]) => void): () => void;
 }
 
 /**
@@ -140,3 +153,27 @@ export interface LayoutResult {
   /** Y-coordinate for each level (level number -> Y position) */
   levelYPositions: Map<number, number>;
 }
+
+/**
+ * Options for phrase-focused layout behavior.
+ */
+export interface PhraseFocusOptions {
+  /** Attraction strength for phrase members (0-1). Default: 0.8 */
+  phraseAttraction: number;
+  /** Repulsion strength pushing non-phrase nodes away (0-1). Default: 0.6 */
+  nonPhraseRepulsion: number;
+  /** Animation duration in milliseconds. Default: 500 */
+  animationDuration: number;
+  /** Minimum gap between phrase cluster and other nodes in pixels. Default: 60 */
+  separationGap: number;
+}
+
+/**
+ * Default phrase focus options.
+ */
+export const defaultPhraseFocusOptions: PhraseFocusOptions = {
+  phraseAttraction: 0.8,
+  nonPhraseRepulsion: 0.6,
+  animationDuration: 500,
+  separationGap: 60,
+};

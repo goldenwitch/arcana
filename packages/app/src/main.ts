@@ -1,7 +1,6 @@
 // @arcana/app - Application entry point
 
 import { parseVocabulary } from "@arcana/vocabulary";
-import { computePhrase } from "@arcana/phrase";
 import { createVisualization, type VizController } from "@arcana/viz";
 
 import {
@@ -13,6 +12,7 @@ import {
   togglePhraseEntryPoint,
   isViewingPhrase,
   getPhraseEntryWords,
+  getPhraseMembers,
   getFilteredWords,
   getSelectedWord,
   getLevelStats,
@@ -66,31 +66,18 @@ let recentFilesDropdown: RecentFilesDropdownElements;
 let fileInput: HTMLInputElement;
 
 /**
- * Get the active vocabulary (phrase filtered or full).
- */
-function getActiveVocabulary() {
-  if (!state.vocabulary) {
-    return null;
-  }
-  if (isViewingPhrase(state) && state.phraseEntryPoints) {
-    return computePhrase(state.vocabulary, state.phraseEntryPoints);
-  }
-  return state.vocabulary;
-}
-
-/**
  * Update state and re-render affected components.
  */
 function updateState(newState: AppState): void {
   const prevState = state;
   state = newState;
 
-  // Compute active vocabulary (phrase or full)
-  const activeVocab = getActiveVocabulary();
+  // Always use full vocabulary for stats and visualization
+  const vocab = state.vocabulary;
 
-  // Update controls based on active vocabulary
-  const stats = getLevelStats({ ...state, vocabulary: activeVocab });
-  const levelCounts = getLevelCounts({ ...state, vocabulary: activeVocab });
+  // Update controls based on full vocabulary
+  const stats = getLevelStats(state);
+  const levelCounts = getLevelCounts(state);
   updateLevelIndicator(
     controlsElements.levelIndicator, 
     stats, 
@@ -98,13 +85,12 @@ function updateState(newState: AppState): void {
     controlsElements.onLevelClick
   );
 
-  const totalWords = state.vocabulary?.words.length ?? 0;
-  const activeWords = activeVocab?.words.length ?? 0;
-  const filteredWords = getFilteredWords({ ...state, vocabulary: activeVocab });
+  const totalWords = vocab?.words.length ?? 0;
+  const filteredWords = getFilteredWords(state);
   
   // Show phrase indicator in word count if viewing phrase
   if (isViewingPhrase(state)) {
-    updateWordCount(controlsElements.wordCount, activeWords, filteredWords.length, true);
+    updateWordCount(controlsElements.wordCount, totalWords, filteredWords.length, true);
   } else {
     updateWordCount(controlsElements.wordCount, totalWords, filteredWords.length, false);
   }
@@ -113,17 +99,22 @@ function updateState(newState: AppState): void {
   const selectedWord = getSelectedWord(state);
   const dependents = getDependents(state);
   const phraseEntryWords = getPhraseEntryWords(state);
+  const phraseMembers = getPhraseMembers(state);
   updateDetailPanel(
     detailPanelElements,
     selectedWord,
     dependents,
-    activeVocab?.words ?? [],
+    vocab?.words ?? [],
     {
-      onClose: () => updateState(setSelectedWord(state, null)),
+      onClose: () => {
+        updateState(setSelectedWord(state, null));
+        if (isViewingPhrase(state)) {
+          updateState(setPhraseEntryPoints(state, null));
+        }
+      },
       onWordClick: (wordId) => {
-        // Toggle phrase entry point when clicking words in detail panel
-        updateState(togglePhraseEntryPoint(setSelectedWord(state, wordId), wordId));
-        vizController?.select(wordId);
+        // Clicking a word in the panel toggles it in the phrase
+        updateState(togglePhraseEntryPoint(state, wordId));
       },
       onViewPhrase: (wordId) => {
         updateState(togglePhraseEntryPoint(state, wordId));
@@ -136,16 +127,22 @@ function updateState(newState: AppState): void {
       isViewingPhrase: isViewingPhrase(state),
       phraseEntryNames: phraseEntryWords.map((w) => w.name),
       phraseEntryIds: state.phraseEntryPoints ?? [],
+      phraseMembers,
     },
   );
 
-  // Update visualization when phrase changes
+  // Update visualization phrase focus when phrase entry points change
   if (
     state.phraseEntryPoints !== prevState.phraseEntryPoints &&
-    vizController &&
-    activeVocab
+    vizController
   ) {
-    vizController.update(activeVocab);
+    if (state.phraseEntryPoints && state.phraseEntryPoints.length > 0) {
+      // Focus on phrase - clusters phrase members and dims others
+      vizController.focusPhrase(state.phraseEntryPoints);
+    } else {
+      // Clear phrase focus - return to default layout
+      vizController.clearFocus();
+    }
   }
 
   // Update visualization highlighting for search
@@ -205,11 +202,9 @@ function loadVocabulary(json: unknown, fileName?: string): void {
 
       // Wire up visualization events
       vizController.onSelect((wordId) => {
-        // Toggle phrase entry point on click
+        // Clicking a node adds it to the phrase (or removes if already in phrase)
         if (wordId) {
-          updateState(togglePhraseEntryPoint(setSelectedWord(state, wordId), wordId));
-        } else {
-          updateState(setSelectedWord(state, null));
+          updateState(togglePhraseEntryPoint(state, wordId));
         }
       });
 

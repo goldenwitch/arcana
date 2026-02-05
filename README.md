@@ -2,6 +2,8 @@
 
 Visualize the semantic vocabulary of a .NET solution as a leveled composition graph.
 
+![Default vocabulary view](docs/images/arcana-default-view.png)
+
 ## What It Does
 
 Arcana transforms a .NET codebase into a **vocabulary**—a visual map showing how primitive types compose into domain abstractions. Think of it as an X-ray of your solution's conceptual architecture.
@@ -61,8 +63,16 @@ Open http://localhost:5173, then drag-and-drop your `vocabulary.json` file onto 
 - **Scroll/pinch** to zoom
 - **Click and drag** to pan
 - **Hover** over a word to highlight its composition edges
-- **Click** a word to see details (dependencies, dependents)
+- **Click** a word to add it to the current phrase—the visualization clusters phrase members and dims unrelated nodes
 - **Search** to filter words by name
+
+### Phrase Focus
+
+Click any word to explore its compositional structure. The visualization clusters all transitive dependencies of the selected word(s), pushing unrelated types aside. This makes it easy to trace how a high-level abstraction is composed from lower-level building blocks.
+
+![Phrase focus view](docs/images/arcana-phrase-focus.png)
+
+Click additional words to extend the phrase, or use the **Clear** button in the details panel to return to the full vocabulary view.
 
 ## Architecture
 

@@ -36,6 +36,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@arcana/viz@workspace:packages/viz"
   dependencies:
+    "@arcana/phrase": "workspace:*"
     "@arcana/vocabulary": "workspace:*"
     "@types/d3": "npm:^7.0.0"
     d3: "npm:^7.0.0"

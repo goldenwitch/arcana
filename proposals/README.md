@@ -12,7 +12,8 @@ Feature proposals for Arcana.
 | [cli-analyzer](cli-analyzer.md) | ✅ Implemented | roslyn-type-extraction, level-computation | .NET CLI: solution → vocabulary.json |
 | [d3-visualization](d3-visualization.md) | ✅ Implemented | vocabulary-model | D3.js vertical stack visualization |
 | [spa-integration](spa-integration.md) | ✅ Implemented | vocabulary-model, d3-visualization | Web app (all UX lives here) |
-| [solution-phrase](solution-phrase.md) | Draft | vocabulary-model | Filter vocabulary to entry points and their dependencies |
+| [solution-phrase](solution-phrase.md) | ✅ Implemented | vocabulary-model | Filter vocabulary to entry points and their dependencies |
+| [phrase-focused-layout](phrase-focused-layout.md) | Draft | solution-phrase, d3-visualization | Cluster phrase members, push unrelated nodes aside |
 | [ux-improvements](ux-improvements.md) | Draft | spa-integration | Recent files, metadata display, visual clarity |
 
 ## Architecture
@@ -50,5 +51,6 @@ The CLI produces files. The SPA consumes them. No coupling.
 3. ✅ **cli-analyzer** — Thin wrapper: path → JSON
 4. ✅ **d3-visualization** — TypeScript visualization
 5. ✅ **spa-integration** — Host app for the visualization
-6. **solution-phrase** — Entry point filtering (TypeScript)
-7. **ux-improvements** — Recent files, metadata display, legend
+6. ✅ **solution-phrase** — Entry point filtering (TypeScript)
+7. **phrase-focused-layout** — Cluster phrase, push unrelated nodes
+8. **ux-improvements** — Recent files, metadata display, legend
