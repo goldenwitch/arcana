@@ -12,7 +12,7 @@ import { defaultOptions } from "./types.js";
 /**
  * Group words by their level.
  */
-function groupByLevel(words: Word[]): Map<number, Word[]> {
+export function groupByLevel(words: Word[]): Map<number, Word[]> {
   const levels = new Map<number, Word[]>();
   for (const word of words) {
     const level = word.level;
