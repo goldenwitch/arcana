@@ -209,6 +209,9 @@ function loadVocabulary(json: unknown, fileName?: string): void {
       });
 
       vizController.onHover((wordId) => {
+        // Skip hover highlighting in phrase mode (phrase dimming handles visibility)
+        if (isViewingPhrase(state)) return;
+        
         if (wordId && !state.searchQuery.trim()) {
           vizController?.highlight([wordId]);
         } else if (!state.searchQuery.trim()) {

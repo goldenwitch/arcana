@@ -666,6 +666,16 @@ export class Renderer {
     this.state.phraseIds = phraseIds;
     this.state.phraseEntryPoints = entryPointIds;
 
+    // Update position map and D3 data BEFORE starting transitions
+    for (const [id, pos] of focusedLayout.positions) {
+      this.positionMap.set(id, pos);
+    }
+
+    // Cancel any existing transitions
+    nodesGroup.selectAll("g.node").interrupt();
+    edgesGroup.selectAll("path.edge").interrupt();
+    labelsGroup.selectAll("g.label").interrupt();
+
     // Animate nodes to new positions
     nodesGroup
       .selectAll<SVGGElement, NodePosition>("g.node")
@@ -674,18 +684,9 @@ export class Renderer {
       .ease(d3.easeCubicOut)
       .attr("transform", (d) => {
         const newPos = focusedLayout.positions.get(d.id);
-        const x = newPos?.x ?? d.x;
-        const y = newPos?.y ?? d.y;
-        // Update position data for edge redrawing
-        d.x = x;
-        d.y = y;
-        return `translate(${x}, ${y})`;
-      });
-
-    // Update position map for edge rendering
-    for (const [id, pos] of focusedLayout.positions) {
-      this.positionMap.set(id, pos);
-    }
+        return `translate(${newPos?.x ?? d.x}, ${newPos?.y ?? d.y})`;
+      })
+      .on("end", () => this.updateStyles());
 
     // Animate edges to follow nodes
     edgesGroup
@@ -710,18 +711,11 @@ export class Renderer {
       .ease(d3.easeCubicOut)
       .attr("transform", (d) => {
         const newPos = focusedLayout.positions.get(d.id);
-        if (newPos) {
-          d.nodeX = newPos.x;
-          d.nodeY = newPos.y;
-          d.x = newPos.x;
-          d.y = newPos.y + nodeRadius + 14;
-        }
+        const x = newPos?.x ?? d.x;
+        const y = (newPos?.y ?? d.nodeY) + nodeRadius + 14;
         const scale = 1 / this.currentZoomScale;
-        return `translate(${d.x}, ${d.y}) scale(${scale})`;
+        return `translate(${x}, ${y}) scale(${scale})`;
       });
-
-    // Update styles after a short delay to allow animation to start
-    setTimeout(() => this.updateStyles(), 50);
 
     // Notify listeners
     this.callbacks.onFocusChange(entryPointIds);
@@ -744,6 +738,16 @@ export class Renderer {
     this.state.phraseIds = null;
     this.state.phraseEntryPoints = [];
 
+    // Update position map BEFORE starting transitions
+    for (const [id, pos] of defaultPositions) {
+      this.positionMap.set(id, pos);
+    }
+
+    // Cancel any existing transitions
+    nodesGroup.selectAll("g.node").interrupt();
+    edgesGroup.selectAll("path.edge").interrupt();
+    labelsGroup.selectAll("g.label").interrupt();
+
     // Animate nodes back to original positions
     nodesGroup
       .selectAll<SVGGElement, NodePosition>("g.node")
@@ -752,17 +756,9 @@ export class Renderer {
       .ease(d3.easeCubicOut)
       .attr("transform", (d) => {
         const newPos = defaultPositions.get(d.id);
-        const x = newPos?.x ?? d.x;
-        const y = newPos?.y ?? d.y;
-        d.x = x;
-        d.y = y;
-        return `translate(${x}, ${y})`;
-      });
-
-    // Update position map
-    for (const [id, pos] of defaultPositions) {
-      this.positionMap.set(id, pos);
-    }
+        return `translate(${newPos?.x ?? d.x}, ${newPos?.y ?? d.y})`;
+      })
+      .on("end", () => this.updateStyles());
 
     // Animate edges
     edgesGroup
@@ -787,18 +783,11 @@ export class Renderer {
       .ease(d3.easeCubicOut)
       .attr("transform", (d) => {
         const newPos = defaultPositions.get(d.id);
-        if (newPos) {
-          d.nodeX = newPos.x;
-          d.nodeY = newPos.y;
-          d.x = newPos.x;
-          d.y = newPos.y + nodeRadius + 14;
-        }
+        const x = newPos?.x ?? d.x;
+        const y = (newPos?.y ?? d.nodeY) + nodeRadius + 14;
         const scale = 1 / this.currentZoomScale;
-        return `translate(${d.x}, ${d.y}) scale(${scale})`;
+        return `translate(${x}, ${y}) scale(${scale})`;
       });
-
-    // Update styles
-    setTimeout(() => this.updateStyles(), 50);
 
     // Notify listeners
     this.callbacks.onFocusChange([]);

@@ -158,10 +158,6 @@ export interface LayoutResult {
  * Options for phrase-focused layout behavior.
  */
 export interface PhraseFocusOptions {
-  /** Attraction strength for phrase members (0-1). Default: 0.8 */
-  phraseAttraction: number;
-  /** Repulsion strength pushing non-phrase nodes away (0-1). Default: 0.6 */
-  nonPhraseRepulsion: number;
   /** Animation duration in milliseconds. Default: 500 */
   animationDuration: number;
   /** Minimum gap between phrase cluster and other nodes in pixels. Default: 60 */
@@ -172,8 +168,6 @@ export interface PhraseFocusOptions {
  * Default phrase focus options.
  */
 export const defaultPhraseFocusOptions: PhraseFocusOptions = {
-  phraseAttraction: 0.8,
-  nonPhraseRepulsion: 0.6,
   animationDuration: 500,
   separationGap: 60,
 };
