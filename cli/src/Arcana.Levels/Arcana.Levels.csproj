@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Arcana.Vocabulary\Arcana.Vocabulary.csproj" />
+  </ItemGroup>
+
+</Project>

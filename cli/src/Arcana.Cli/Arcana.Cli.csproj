@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Arcana.Vocabulary\Arcana.Vocabulary.csproj" />
+    <ProjectReference Include="..\Arcana.Extraction\Arcana.Extraction.csproj" />
+    <ProjectReference Include="..\Arcana.Levels\Arcana.Levels.csproj" />
+  </ItemGroup>
+
+</Project>

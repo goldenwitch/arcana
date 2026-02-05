@@ -1,0 +1,414 @@
+{
+  "words": [
+    {
+      "id": "System.Void",
+      "name": "void",
+      "kind": "primitive",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Boolean",
+      "name": "bool",
+      "kind": "primitive",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Int32",
+      "name": "int",
+      "kind": "primitive",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Int64",
+      "name": "long",
+      "kind": "primitive",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.String",
+      "name": "string",
+      "kind": "primitive",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Guid",
+      "name": "Guid",
+      "kind": "primitive",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Type",
+      "name": "Type",
+      "kind": "primitive",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Object",
+      "name": "object",
+      "kind": "primitive",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Threading.CancellationToken",
+      "name": "CancellationToken",
+      "kind": "primitive",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Threading.Tasks.Task<>",
+      "name": "Task<>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Collections.Generic.List<>",
+      "name": "List<>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Collections.Generic.IReadOnlyList<>",
+      "name": "IReadOnlyList<>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Collections.Generic.IReadOnlyCollection<>",
+      "name": "IReadOnlyCollection<>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Collections.Generic.IEnumerable<>",
+      "name": "IEnumerable<>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Collections.Generic.IAsyncEnumerable<>",
+      "name": "IAsyncEnumerable<>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.Func<,>",
+      "name": "Func<,>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "System.IServiceProvider",
+      "name": "IServiceProvider",
+      "kind": "user",
+      "level": 1,
+      "composedOf": ["System.Object", "System.Type"]
+    },
+    {
+      "id": "Coven.Status",
+      "name": "Status",
+      "kind": "user",
+      "level": 1,
+      "composedOf": ["System.Int32"]
+    },
+    {
+      "id": "Coven.Spellcasting.FaultKind",
+      "name": "FaultKind",
+      "kind": "user",
+      "level": 1,
+      "composedOf": ["System.Int32"]
+    },
+    {
+      "id": "Coven.Core.Empty",
+      "name": "Empty",
+      "kind": "user",
+      "level": 1,
+      "composedOf": []
+    },
+    {
+      "id": "Coven.Core.Entry",
+      "name": "Entry",
+      "kind": "user",
+      "level": 1,
+      "composedOf": []
+    },
+    {
+      "id": "Coven.Core.IDraft",
+      "name": "IDraft",
+      "kind": "user",
+      "level": 1,
+      "composedOf": []
+    },
+    {
+      "id": "Coven.IDaemon",
+      "name": "IDaemon",
+      "kind": "user",
+      "level": 2,
+      "composedOf": ["Coven.Status", "System.Threading.CancellationToken", "System.Threading.Tasks.Task<>"]
+    },
+    {
+      "id": "Coven.Spellcasting.ISpellRequest",
+      "name": "ISpellRequest",
+      "kind": "user",
+      "level": 1,
+      "composedOf": ["System.Guid"]
+    },
+    {
+      "id": "Coven.Spellcasting.ISpellResult",
+      "name": "ISpellResult",
+      "kind": "user",
+      "level": 1,
+      "composedOf": ["System.Guid"]
+    },
+    {
+      "id": "Coven.Spellcasting.ISpellFault",
+      "name": "ISpellFault",
+      "kind": "user",
+      "level": 2,
+      "composedOf": ["System.Guid", "System.String"]
+    },
+    {
+      "id": "Coven.Spellcasting.SpellDefinition",
+      "name": "SpellDefinition",
+      "kind": "user",
+      "level": 1,
+      "composedOf": ["System.String"]
+    },
+    {
+      "id": "Coven.Spellcasting.ISpell",
+      "name": "ISpell",
+      "kind": "user",
+      "level": 2,
+      "composedOf": ["Coven.Spellcasting.SpellDefinition", "System.Threading.Tasks.Task<>"]
+    },
+    {
+      "id": "Coven.Spellcasting.ISpell<,>",
+      "name": "ISpell<TIn,TOut>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "Coven.Spellcasting.Spellbook",
+      "name": "Spellbook",
+      "kind": "user",
+      "level": 2,
+      "composedOf": ["System.Collections.Generic.IReadOnlyList<>", "Coven.Spellcasting.SpellDefinition", "System.Object"]
+    },
+    {
+      "id": "Coven.Spellcasting.SpellEntry",
+      "name": "SpellEntry",
+      "kind": "user",
+      "level": 2,
+      "composedOf": ["Coven.Core.Entry"]
+    },
+    {
+      "id": "Coven.Spellcasting.SpellRequest",
+      "name": "SpellRequest",
+      "kind": "user",
+      "level": 3,
+      "composedOf": ["Coven.Spellcasting.SpellEntry", "Coven.Spellcasting.ISpellRequest", "System.Guid"]
+    },
+    {
+      "id": "Coven.Spellcasting.SpellResult",
+      "name": "SpellResult",
+      "kind": "user",
+      "level": 3,
+      "composedOf": ["Coven.Spellcasting.SpellEntry", "Coven.Spellcasting.ISpellResult", "System.Guid"]
+    },
+    {
+      "id": "Coven.Spellcasting.SpellFault",
+      "name": "SpellFault",
+      "kind": "user",
+      "level": 4,
+      "composedOf": ["Coven.Spellcasting.SpellEntry", "Coven.Spellcasting.ISpellFault", "System.Guid", "System.String", "Coven.Spellcasting.FaultKind"]
+    },
+    {
+      "id": "Coven.Transmutation.ITransmuter<,>",
+      "name": "ITransmuter<TIn,TOut>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "Coven.Transmutation.IBatchTransmuter<,>",
+      "name": "IBatchTransmuter<TChunk,TOutput>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "Coven.Transmutation.BatchTransmuteResult<,>",
+      "name": "BatchTransmuteResult<TChunk,TOutput>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "Coven.Core.IMagikBlock<,>",
+      "name": "IMagikBlock<T,TOutput>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "Coven.Core.IScrivener<>",
+      "name": "IScrivener<TJournalEntryType>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "Coven.Core.IOrchestratorSink",
+      "name": "IOrchestratorSink",
+      "kind": "user",
+      "level": 1,
+      "composedOf": ["System.String"]
+    },
+    {
+      "id": "Coven.Core.IBoard",
+      "name": "IBoard",
+      "kind": "user",
+      "level": 2,
+      "composedOf": ["System.Threading.Tasks.Task<>", "System.Collections.Generic.List<>", "System.Threading.CancellationToken", "System.Boolean"]
+    },
+    {
+      "id": "Coven.Core.ICoven",
+      "name": "ICoven",
+      "kind": "user",
+      "level": 2,
+      "composedOf": ["System.Threading.Tasks.Task<>", "System.Collections.Generic.List<>", "System.Threading.CancellationToken"]
+    },
+    {
+      "id": "Coven.Core.Covenants.ICovenant",
+      "name": "ICovenant",
+      "kind": "user",
+      "level": 3,
+      "composedOf": ["Coven.Core.Entry", "System.Func<,>", "System.Threading.CancellationToken"]
+    },
+    {
+      "id": "Coven.Core.Routing.ISelectionStrategy",
+      "name": "ISelectionStrategy",
+      "kind": "user",
+      "level": 2,
+      "composedOf": ["System.Collections.Generic.IReadOnlyList<>"]
+    },
+    {
+      "id": "Coven.Core.Routing.SelectionCandidate",
+      "name": "SelectionCandidate",
+      "kind": "user",
+      "level": 2,
+      "composedOf": ["System.Int32", "System.Type", "System.String", "System.Collections.Generic.IReadOnlyCollection<>"]
+    },
+    {
+      "id": "Coven.Core.PullOptions",
+      "name": "PullOptions",
+      "kind": "user",
+      "level": 2,
+      "composedOf": ["System.Func<,>", "System.Object", "System.Boolean"]
+    },
+    {
+      "id": "Coven.Core.GetWorkRequest<>",
+      "name": "GetWorkRequest<TIn>",
+      "kind": "generic",
+      "level": 0,
+      "composedOf": []
+    },
+    {
+      "id": "Coven.Agents.AgentEntry",
+      "name": "AgentEntry",
+      "kind": "user",
+      "level": 2,
+      "composedOf": ["Coven.Core.Entry", "System.String"]
+    },
+    {
+      "id": "Coven.Agents.AgentEntryDraft",
+      "name": "AgentEntryDraft",
+      "kind": "user",
+      "level": 3,
+      "composedOf": ["Coven.Agents.AgentEntry", "Coven.Core.IDraft"]
+    },
+    {
+      "id": "Coven.Agents.AgentPrompt",
+      "name": "AgentPrompt",
+      "kind": "user",
+      "level": 3,
+      "composedOf": ["Coven.Agents.AgentEntry", "System.String"]
+    },
+    {
+      "id": "Coven.Agents.AgentResponse",
+      "name": "AgentResponse",
+      "kind": "user",
+      "level": 3,
+      "composedOf": ["Coven.Agents.AgentEntry", "System.String"]
+    },
+    {
+      "id": "Coven.Agents.AgentThought",
+      "name": "AgentThought",
+      "kind": "user",
+      "level": 3,
+      "composedOf": ["Coven.Agents.AgentEntry", "System.String"]
+    },
+    {
+      "id": "Coven.Agents.AgentAck",
+      "name": "AgentAck",
+      "kind": "user",
+      "level": 3,
+      "composedOf": ["Coven.Agents.AgentEntry", "System.Int64"]
+    },
+    {
+      "id": "Coven.Agents.AgentEfferentChunk",
+      "name": "AgentEfferentChunk",
+      "kind": "user",
+      "level": 4,
+      "composedOf": ["Coven.Agents.AgentEntryDraft", "System.String"]
+    },
+    {
+      "id": "Coven.Agents.AgentAfferentChunk",
+      "name": "AgentAfferentChunk",
+      "kind": "user",
+      "level": 4,
+      "composedOf": ["Coven.Agents.AgentEntryDraft", "System.String"]
+    },
+    {
+      "id": "Coven.Agents.AgentToolRequest",
+      "name": "AgentToolRequest",
+      "kind": "user",
+      "level": 4,
+      "composedOf": ["Coven.Agents.AgentEntry", "Coven.Spellcasting.ISpellRequest", "System.String", "System.Guid"]
+    },
+    {
+      "id": "Coven.Agents.AgentToolResult",
+      "name": "AgentToolResult",
+      "kind": "user",
+      "level": 4,
+      "composedOf": ["Coven.Agents.AgentEntry", "Coven.Spellcasting.ISpellResult", "System.String", "System.Guid"]
+    },
+    {
+      "id": "Coven.Agents.AgentToolFault",
+      "name": "AgentToolFault",
+      "kind": "user",
+      "level": 5,
+      "composedOf": ["Coven.Agents.AgentEntry", "Coven.Spellcasting.ISpellFault", "System.String", "System.Guid", "Coven.Spellcasting.FaultKind"]
+    }
+  ],
+  "metadata": {
+    "source": "Coven spellcasting framework - manual extraction from Coven.Core, Coven.Spellcasting, Coven.Agents, Coven.Transmutation",
+    "extracted": "2026-02-04T00:00:00.000Z"
+  }
+}

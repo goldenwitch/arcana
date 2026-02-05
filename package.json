@@ -1,0 +1,19 @@
+{
+  "name": "arcana",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "yarn workspaces foreach -A --topological run build",
+    "test": "vitest run",
+    "lint": "eslint packages/*/src",
+    "typecheck": "tsc --build"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.0"
+  },
+  "packageManager": "yarn@4.12.0"
+}

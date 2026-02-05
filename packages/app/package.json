@@ -1,0 +1,20 @@
+{
+  "name": "@arcana/app",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@arcana/phrase": "workspace:*",
+    "@arcana/viz": "workspace:*",
+    "@arcana/vocabulary": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
